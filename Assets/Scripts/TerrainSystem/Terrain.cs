@@ -35,7 +35,7 @@ public class Terrain : MonoBehaviour
                 float Yval = Noise.GetNoiseVal(Parameters.NoiseXOrigin, Parameters.NoiseYOrigin, i, j, Parameters.NoiseScale, Parameters.NoiseOctaves, Parameters.NoisePersistance, Parameters.NoiseLacunarity);
                 if (Yval > extremeTopY.y) extremeTopY.y = Yval;
                 if (Yval < extremeTopY.x) extremeTopY.x = Yval;
-                verts.Add(new Vector3((i * xincr) + transform.position.x, Yval, (j * zincr) + transform.position.z));
+                verts.Add(new Vector3((i * xincr)  - (Parameters.Width/2), Yval, (j * zincr) - (Parameters.Length / 2)));
             }
         }
 
