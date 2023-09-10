@@ -9,6 +9,7 @@ public class TerrainParent : MonoBehaviour
     public TerrainParameters parameters;
     public Dictionary<Vector2Int, Terrain> TerrainList = new Dictionary<Vector2Int, Terrain>();
     public static event Action TerrainTileCreated;
+    private List<int> freeIDs = new List<int>();
 
     // Start is called before the first frame update
     void Start()
@@ -60,7 +61,16 @@ public class TerrainParent : MonoBehaviour
 
     public void CreateTerrain(Vector2Int terrainPos, Vector3 meshPos)
     {
-        GameObject EmptyObj = new GameObject("Terrain" + TerrainList.Count.ToString());
+        // loop through to find free name
+        string objectName = "";
+        if (freeIDs.Count > 0) 
+        {
+            objectName = "Terrain" + freeIDs[0];
+            freeIDs.RemoveAt(0);
+        }
+        else objectName = "Terrain" + TerrainList.Count.ToString();
+
+        GameObject EmptyObj = new GameObject(objectName);
         EmptyObj.transform.parent = transform;
         EmptyObj.transform.position = meshPos;
         Terrain newTerrain = EmptyObj.AddComponent<Terrain>();
@@ -75,6 +85,7 @@ public class TerrainParent : MonoBehaviour
 
     public void CreateBaseTerrain()
     {
+        if (TerrainList.ContainsKey(Vector2Int.zero)) return;
         GameObject EmptyObj = new GameObject("Terrain" + TerrainList.Count.ToString());
         EmptyObj.transform.parent = transform;
         Terrain newTerrain = EmptyObj.AddComponent<Terrain>();
@@ -82,6 +93,19 @@ public class TerrainParent : MonoBehaviour
         newTerrain.TerrainPos = new Vector2Int(0, 0);
         newTerrain.GenerateMesh();
         TerrainList[new Vector2Int(0,0)] = newTerrain;
+        freeIDs.Clear();
+    }
+
+    public void DeleteTerrain(Vector2Int pos)
+    {
+        if (pos == Vector2Int.zero) return;
+
+        Terrain terrain = TerrainList[pos];
+        string objectName  = terrain.gameObject.name.Remove(0, 7);
+        //Debug.Log("object name: " + objectName);
+        freeIDs.Add(int.Parse(objectName));
+        TerrainList.Remove(pos);
+        DestroyImmediate(terrain.gameObject);
     }
 }
 
@@ -115,6 +139,7 @@ public class TerrainParentEditor : UnityEditor.Editor
 {
     TerrainParent terrainParent;
     bool addTerrainMode;
+    bool removeTerrainMode;
     private List<Vector2Int> emptyTiles;
 
     //bool keyPressed;
@@ -155,8 +180,23 @@ public class TerrainParentEditor : UnityEditor.Editor
                     terrainParent.CreateTerrain(tile, rootPos + offset);
                 }
             }
+        }
 
-            // if mouse is clicked over a grid, create new terrain in spot
+        else if (removeTerrainMode)
+        {
+            Vector3 rootPos = terrainParent.TerrainList[new Vector2Int(0, 0)].transform.position;
+            float rootSize = terrainParent.parameters.Width / 2;
+            // render empty edges
+            foreach (KeyValuePair<Vector2Int, Terrain> tile in terrainParent.TerrainList)
+            {
+                Vector3 offset = new Vector3(tile.Key.x * terrainParent.parameters.Width, 0, tile.Key.y * terrainParent.parameters.Length);
+                //Handles.DrawWireCube(rootPos + offset, rootSize);
+                if (Handles.Button(rootPos + offset, Quaternion.Euler(90, 0, 0), rootSize, rootSize, Handles.RectangleHandleCap))
+                {
+                    terrainParent.DeleteTerrain(tile.Key);
+                    return;
+                }
+            }
         }
     }
 
@@ -174,10 +214,17 @@ public class TerrainParentEditor : UnityEditor.Editor
 
         if (GUILayout.Button("Add Terrain Tile"))
         {
+            removeTerrainMode = false;
             addTerrainMode = !addTerrainMode;
             if (addTerrainMode) RefreshEmptyTiles();
         }
         GUILayout.EndHorizontal();
+
+        if (GUILayout.Button("remove Terrain Tile"))
+        {
+            addTerrainMode = false;
+            removeTerrainMode = !removeTerrainMode;
+        }
     }
 
     private void RefreshEmptyTiles()
