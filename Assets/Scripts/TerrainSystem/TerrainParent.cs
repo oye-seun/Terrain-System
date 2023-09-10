@@ -65,6 +65,8 @@ public class TerrainParent : MonoBehaviour
         EmptyObj.transform.position = meshPos;
         Terrain newTerrain = EmptyObj.AddComponent<Terrain>();
         newTerrain.Parameters = parameters;
+        //newTerrain.Parameters.NoiseXOrigin += terrainPos.x * parameters.VertsWidth;
+        //newTerrain.Parameters.NoiseYOrigin += terrainPos.y * parameters.VertsLength;
         newTerrain.TerrainPos = terrainPos;
         newTerrain.GenerateMesh();
         TerrainList[terrainPos] = newTerrain;
@@ -94,8 +96,7 @@ public struct TerrainParameters
     [Header("Map Dimensions")]
     public float Width;
     public float Length;
-    public float MinHeight;
-    public float MaxHeight;
+    public float Height;
 
     [Header("Noise Parameters")]
     public float NoiseXOrigin;

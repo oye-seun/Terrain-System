@@ -9,6 +9,7 @@ public class Terrain : MonoBehaviour
 {
     public TerrainParameters Parameters;
     public Vector2Int TerrainPos;
+    public bool ShowVerts;
 
     private List<Vector3> verts;
     private Mesh _mesh;
@@ -24,7 +25,8 @@ public class Terrain : MonoBehaviour
         float xincr = Parameters.Width / Parameters.VertsWidth;
         float zincr = Parameters.Length / Parameters.VertsWidth;
 
-        Vector2 extremeTopY = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
+        Parameters.VertsWidth++;
+        Parameters.VertsLength++;
 
         // generate simple square mesh (verts) using perlin noise
         verts = new List<Vector3>();
@@ -32,17 +34,14 @@ public class Terrain : MonoBehaviour
         {
             for (int i = 0; i < Parameters.VertsWidth; i++)
             {
-                float Yval = Noise.GetNoiseVal(Parameters.NoiseXOrigin, Parameters.NoiseYOrigin, i, j, Parameters.NoiseScale, Parameters.NoiseOctaves, Parameters.NoisePersistance, Parameters.NoiseLacunarity);
-                if (Yval > extremeTopY.y) extremeTopY.y = Yval;
-                if (Yval < extremeTopY.x) extremeTopY.x = Yval;
+                float Yval = Noise.GetNoiseVal(Parameters.NoiseXOrigin, Parameters.NoiseYOrigin, i + (TerrainPos.x * (Parameters.VertsWidth-1)), j + (TerrainPos.y * (Parameters.VertsLength-1)), Parameters.NoiseScale, Parameters.NoiseOctaves, Parameters.NoisePersistance, Parameters.NoiseLacunarity);
                 verts.Add(new Vector3((i * xincr)  - (Parameters.Width/2), Yval, (j * zincr) - (Parameters.Length / 2)));
             }
         }
 
-        // lerp mesh to height
         for (int i = 0; i < verts.Count; i++)
         {
-            verts[i] = new Vector3(verts[i].x, Mathf.Lerp(Parameters.MinHeight, Parameters.MaxHeight, Mathf.InverseLerp(extremeTopY.x, extremeTopY.y, verts[i].y)), verts[i].z);
+            verts[i] = new Vector3(verts[i].x, verts[i].y * Parameters.Height, verts[i].z);
         }
 
         // generate triangles
@@ -61,6 +60,18 @@ public class Terrain : MonoBehaviour
         _mesh.vertices = verts.ToArray();
         _mesh.triangles = triangles.ToArray();
         _mesh.RecalculateNormals();
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (ShowVerts)
+        {
+            foreach (Vector3 v in verts)
+            {
+                Gizmos.DrawCube(v + transform.position, Vector3.one * 0.02f);
+            }
+        }
+        
     }
 }
 
