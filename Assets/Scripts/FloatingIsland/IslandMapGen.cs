@@ -1,4 +1,5 @@
 using UnityEngine;
+using HelperClasses;
 
 public class IslandMapGen : MonoBehaviour
 {

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using HelperClasses;
 
 public class MapGenerator : MonoBehaviour
 {

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using HelperClasses;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
@@ -10,10 +11,12 @@ public class Terrain : MonoBehaviour
     public TerrainParameters Parameters;
     public Vector2Int TerrainPos;
     public bool ShowVerts;
+    public bool ShowUVs;
 
     private List<Vector3> verts;
     private Mesh _mesh;
     private List<int> triangles;
+    private List<Vector2> uvs;
     
     public void GenerateMesh()
     {
@@ -28,7 +31,7 @@ public class Terrain : MonoBehaviour
         Parameters.VertsWidth++;
         Parameters.VertsLength++;
 
-        // generate simple square mesh (verts) using perlin noise
+        // generate simple square mesh (verts) using perlin noise and UVs
         verts = new List<Vector3>();
         for (int j = 0; j < Parameters.VertsLength; j++)
         {
@@ -60,6 +63,29 @@ public class Terrain : MonoBehaviour
         _mesh.vertices = verts.ToArray();
         _mesh.triangles = triangles.ToArray();
         _mesh.RecalculateNormals();
+        gameObject.AddComponent<MeshCollider>();
+    }
+
+    public void GenerateUVs(Vector2Int min, Vector2Int max)
+    {
+        Vector2Int absMin = new Vector2Int(Mathf.Abs(min.x), Mathf.Abs(min.y));
+        Vector2Int newTerrainPos = TerrainPos + absMin;
+        //Debug.Log("newPos: " + newTerrainPos + " min: " + min + " max: " + max);
+        max = max + absMin + Vector2Int.one;
+        Vector2 uvsPerTile = new Vector2((float)1/max.x, (float)1/max.y);
+
+        //generate UVs
+        uvs = new List<Vector2>();
+        for (int j = 0; j < Parameters.VertsLength; j++)
+        {
+            for (int i = 0; i < Parameters.VertsWidth; i++)
+            {
+                uvs.Add(new Vector2((newTerrainPos.x * uvsPerTile.x) + (uvsPerTile.x * (float)i / (Parameters.VertsWidth - 1)), 
+                    (newTerrainPos.y * uvsPerTile.y) + (uvsPerTile.y * (float)j / (Parameters.VertsLength - 1))));
+            }
+        }
+
+        _mesh.uv = uvs.ToArray();
     }
 
     private void OnDrawGizmos()
@@ -71,7 +97,14 @@ public class Terrain : MonoBehaviour
                 Gizmos.DrawCube(v + transform.position, Vector3.one * 0.02f);
             }
         }
-        
+        if (ShowUVs)
+        {
+            foreach (Vector2 v in uvs)
+            {
+                Gizmos.DrawCube(new Vector3(v.x, 0, v.y), Vector3.one * 0.02f);
+            }
+        }
+
     }
 }
 

@@ -21,7 +21,7 @@ public class CubeRaycast : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (/*Mouse.current.leftButton.isPressed*/Inputs.GetMouseDown(0))
+        if (/*Mouse.current.leftButton.isPressed*/Inputs.GetMouseButton(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Inputs.MousePos());
             RaycastHit hit;

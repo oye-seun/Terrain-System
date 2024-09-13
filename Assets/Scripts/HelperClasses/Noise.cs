@@ -3,94 +3,97 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public static class Noise 
+namespace HelperClasses
 {
-    public static float[,] GenerateNoiseMap(float xOrg, float yOrg, int width, int height, float scale, int octaves, float persistance, float lacunarity)
+    public static class Noise
     {
-        float[,] noiseMap = new float[width, height];
-        if (scale <= 0) scale = 0.0001f;
-
-        float minVal = float.MaxValue;
-        float maxVal = float.MinValue;
-
-        for (int y = 0; y < height; y++)
+        public static float[,] GenerateNoiseMap(float xOrg, float yOrg, int width, int height, float scale, int octaves, float persistance, float lacunarity)
         {
-            for (int x = 0; x < width; x++)
-            {
-                float amplitude = 1;
-                float frequency = 1;
-                float noiseHeight = 0;
+            float[,] noiseMap = new float[width, height];
+            if (scale <= 0) scale = 0.0001f;
 
-                for(int i = 0; i < octaves; i++)
+            float minVal = float.MaxValue;
+            float maxVal = float.MinValue;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
                 {
-                    float sampleX = (xOrg + x ) * frequency / scale;
-                    float sampleY = (yOrg + y ) * frequency / scale;
+                    float amplitude = 1;
+                    float frequency = 1;
+                    float noiseHeight = 0;
 
-                    float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
-                    noiseHeight += perlinValue * amplitude;
+                    for (int i = 0; i < octaves; i++)
+                    {
+                        float sampleX = (xOrg + x) * frequency / scale;
+                        float sampleY = (yOrg + y) * frequency / scale;
 
-                    amplitude *= persistance;
-                    frequency *= lacunarity;
+                        float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
+                        noiseHeight += perlinValue * amplitude;
+
+                        amplitude *= persistance;
+                        frequency *= lacunarity;
+                    }
+
+                    minVal = (noiseHeight < minVal) ? noiseHeight : minVal;
+                    maxVal = (noiseHeight > maxVal) ? noiseHeight : maxVal;
+                    noiseMap[x, y] = noiseHeight;
                 }
-
-                minVal = (noiseHeight < minVal)? noiseHeight : minVal;
-                maxVal = (noiseHeight > maxVal)? noiseHeight : maxVal;
-                noiseMap[x, y] = noiseHeight;
             }
+            NormalizeMap(noiseMap, minVal, maxVal);
+            return noiseMap;
         }
-        NormalizeMap(noiseMap, minVal, maxVal);
-        return noiseMap;
-    }
 
-    public static void NormalizeMap(float[,] map, float floor, float ceiling)
-    {
-        for (int y = 0; y < map.GetLength(0); y++)
+        public static void NormalizeMap(float[,] map, float floor, float ceiling)
         {
-            for (int x = 0; x < map.GetLength(1); x++)
+            for (int y = 0; y < map.GetLength(0); y++)
             {
-                map[x, y] = Mathf.InverseLerp(floor, ceiling, map[x, y]);
+                for (int x = 0; x < map.GetLength(1); x++)
+                {
+                    map[x, y] = Mathf.InverseLerp(floor, ceiling, map[x, y]);
+                }
             }
         }
-    }
 
-    public static float GetNoiseVal(float xOrg, float yOrg, int xpos, int ypos, float scale, int octaves, float persistance, float lacunarity)
-    {
-        //float[,] noiseMap = new float[width, height];
-        if (scale <= 0) scale = 0.0001f;
-
-        //float minVal = float.MaxValue;
-        //float maxVal = float.MinValue;
-
-        float amplitude = 1;
-        float frequency = 1;
-        float noiseHeight = 0;
-
-        for (int i = 0; i < octaves; i++)
+        public static float GetNoiseVal(float xOrg, float yOrg, int xpos, int ypos, float scale, int octaves, float persistance, float lacunarity)
         {
-            float sampleX = (xOrg + xpos) * frequency / scale;
-            float sampleY = (yOrg + ypos) * frequency / scale;
+            //float[,] noiseMap = new float[width, height];
+            if (scale <= 0) scale = 0.0001f;
 
-            float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
-            noiseHeight += perlinValue * amplitude;
+            //float minVal = float.MaxValue;
+            //float maxVal = float.MinValue;
 
-            amplitude *= persistance;
-            frequency *= lacunarity;
+            float amplitude = 1;
+            float frequency = 1;
+            float noiseHeight = 0;
+
+            for (int i = 0; i < octaves; i++)
+            {
+                float sampleX = (xOrg + xpos) * frequency / scale;
+                float sampleY = (yOrg + ypos) * frequency / scale;
+
+                float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
+                noiseHeight += perlinValue * amplitude;
+
+                amplitude *= persistance;
+                frequency *= lacunarity;
+            }
+
+            return noiseHeight;
+
+            //minVal = (noiseHeight < minVal) ? noiseHeight : minVal;
+            //maxVal = (noiseHeight > maxVal) ? noiseHeight : maxVal;
+            //noiseMap[x, y] = noiseHeight;
+
+            //for (int y = 0; y < height; y++)
+            //{
+            //    for (int x = 0; x < width; x++)
+            //    {
+
+            //    }
+            //}
+            //NormalizeMap(noiseMap, minVal, maxVal);
+            //return noiseMap;
         }
-
-        return noiseHeight;
-
-        //minVal = (noiseHeight < minVal) ? noiseHeight : minVal;
-        //maxVal = (noiseHeight > maxVal) ? noiseHeight : maxVal;
-        //noiseMap[x, y] = noiseHeight;
-
-        //for (int y = 0; y < height; y++)
-        //{
-        //    for (int x = 0; x < width; x++)
-        //    {
-                
-        //    }
-        //}
-        //NormalizeMap(noiseMap, minVal, maxVal);
-        //return noiseMap;
     }
 }

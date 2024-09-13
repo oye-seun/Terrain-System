@@ -13,9 +13,14 @@ public class Inputs : MonoBehaviour
         return Input.GetKeyDown(key);
     }
 
-    public static bool GetMouseDown(int btn)
+    public static bool GetMouseButton(int btn)
     {
         return Input.GetMouseButton(btn);
+    }
+
+    public static bool GetMouseDown(int btn)
+    {
+        return Input.GetMouseButtonDown(btn);
     }
 
     public static Vector3 MousePos()
